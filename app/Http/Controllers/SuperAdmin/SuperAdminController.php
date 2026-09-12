@@ -35,22 +35,11 @@ class SuperAdminController extends Controller
 
         $ownerActivity = User::where('role', 'owner')
             ->with('tenants')
-            ->whereIn('id', function ($query) {
-                $query->select('user_id')
-                    ->from('sessions')
-                    ->where('last_activity', '>', now()->subDays(30)->timestamp)
-                    ->groupBy('user_id');
-            })
-            ->latest('updated_at')
+            ->whereNotNull('last_login_at')
+            ->latest('last_login_at')
             ->take(5)
             ->get()
             ->map(function ($user) {
-                $lastSession = DB::table('sessions')
-                    ->where('user_id', $user->id)
-                    ->where('last_activity', '>', now()->subDays(30)->timestamp)
-                    ->orderByDesc('last_activity')
-                    ->first();
-
                 $tenant = $user->tenants->first();
 
                 return [
@@ -58,8 +47,8 @@ class SuperAdminController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'tenant' => $tenant ? ['id' => $tenant->id, 'name' => $tenant->name] : null,
-                    'last_login_at' => $lastSession ? \Carbon\Carbon::createFromTimestamp($lastSession->last_activity)->diffForHumans() : null,
-                    'last_activity' => $lastSession ? \Carbon\Carbon::createFromTimestamp($lastSession->last_activity)->toISOString() : null,
+                    'last_login_at' => $user->last_login_at ? \Carbon\Carbon::parse($user->last_login_at)->diffForHumans() : null,
+                    'last_activity' => $user->last_login_at ? \Carbon\Carbon::parse($user->last_login_at)->toISOString() : null,
                 ];
             });
 

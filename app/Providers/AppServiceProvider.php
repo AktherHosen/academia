@@ -24,6 +24,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+
+        \Illuminate\Support\Facades\Event::listen(function (\Illuminate\Auth\Events\Login $event) {
+            $event->user->forceFill([
+                'last_login_at' => now(),
+            ])->save();
+        });
     }
 
     /**
