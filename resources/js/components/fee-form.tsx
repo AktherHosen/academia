@@ -15,7 +15,9 @@ import fees from '@/routes/fees';
 type Student = {
     id: number;
     name: string;
-    coaching_class: { id: number; name: string } | null;
+    coaching_class: {
+        default_fee: number; id: number; name: string
+    } | null;
 };
 
 type Batch = {
@@ -128,7 +130,7 @@ export default function FeeForm({
             return null;
         }
 
-        const defaultFee = enrollment.student.coaching_class.default_fee ?? 0;
+        const defaultFee = Number(enrollment.student.coaching_class.default_fee ?? 0);
         const enrolledAt = enrollment.enrolled_at ? new Date(enrollment.enrolled_at) : null;
         const selectedMonth = parseInt(data.month);
         const selectedYear = parseInt(data.year);
